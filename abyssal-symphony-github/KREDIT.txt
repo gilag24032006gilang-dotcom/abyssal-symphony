@@ -1,0 +1,5 @@
+﻿Abyssal Symphony
+
+Sampel instrumen di folder samples/ berasal dari VSCO-2 Community Edition
+(Versilian Studios LLC; upright piano oleh Simon Dalzell / Ivy Audio),
+lisensi CC0-1.0: https://github.com/sgossner/VSCO-2-CE
