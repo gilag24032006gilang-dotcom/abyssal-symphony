@@ -30,43 +30,54 @@
 [hidden]{display:none!important}
 html,body{height:100%;margin:0;background:var(--abyss);color:var(--ink);overflow:hidden;font-family:var(--f-body)}
 #stage{position:fixed;inset:0;width:100vw;height:100vh;display:block;background:var(--abyss);touch-action:none}
-.cam{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:2px;height:2px;opacity:0;pointer-events:none;transform:scaleX(-1);border:1px solid var(--line);border-radius:6px}
-.cam.show{width:220px;height:auto;opacity:.8}
-.cam.ref{width:min(200px,26vw);height:auto;opacity:.55;transform:none;top:calc(env(safe-area-inset-top,0px) + 16px);bottom:auto}
+.cam{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;transform:scaleX(-1);border:1px solid var(--line);border-radius:6px;background:#020b12}
+.cam.ref{transform:none}
+#cameraGuide{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 14px);width:min(270px,calc(100vw - 28px));padding:8px;border:1px solid var(--line);border-radius:8px;background:rgba(0,5,12,.86);z-index:8}
+.cam-preview-frame{overflow:hidden;border-radius:6px}
+#cameraGuide[data-fit="ready"]{border-color:rgba(80,255,176,.5)}
+#cameraGuide[data-fit="upper"]{border-color:rgba(255,207,122,.5)}
+.cam-guide-copy{display:grid;gap:2px;padding:8px 2px 7px}
+.cam-guide-copy b{font-size:13px;font-weight:600;color:var(--ink)}
+.cam-guide-copy span{font-size:12px;line-height:1.4;color:var(--muted)}
+#btnUpper{width:100%;padding:9px 11px;font-size:12px;line-height:1.3}
 
 .panel{position:fixed;left:0;right:0;bottom:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 max(28px,env(safe-area-inset-bottom,0px))}
-#intro{top:0;display:flex;flex-direction:column;align-items:stretch;overflow-y:auto;background:linear-gradient(to top,rgba(0,2,6,.94) 0%,rgba(0,2,6,.62) 48%,rgba(0,2,6,0) 80%);transition:opacity 1.4s ease}
+#intro{top:0;display:flex;flex-direction:column;align-items:stretch;overflow-y:auto;background:linear-gradient(90deg,rgba(0,2,6,.88) 0%,rgba(0,2,6,.52) 48%,rgba(0,2,6,0) 100%);transition:opacity 1.4s ease}
 #intro.gone{opacity:0;pointer-events:none}
-.intro-inner{max-width:720px;display:grid;gap:22px;margin-left:clamp(0px,5vw,72px);margin-top:auto;margin-bottom:clamp(0px,4vh,44px);padding-top:48px}
-.kicker{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin:0}
-h1{font-family:var(--f-display);font-weight:400;font-size:clamp(2.6rem,7vw,5.2rem);line-height:.95;letter-spacing:.02em;margin:0;text-wrap:balance;text-shadow:0 0 34px rgba(0,240,255,.35)}
-.lede{font-size:clamp(1rem,1.5vw,1.12rem);line-height:1.6;color:#bcd3d8;max-width:56ch;margin:0}
-.actions{display:flex;flex-wrap:wrap;gap:12px}
-button{font:500 15px/1 var(--f-body);color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:999px;padding:14px 22px;cursor:pointer;transition:border-color .2s,background-color .2s,opacity .3s}
-button:hover{border-color:rgba(0,240,255,.6);background:rgba(0,240,255,.06)}
+.intro-inner{width:calc(100% - clamp(0px,4vw,48px));max-width:620px;display:grid;gap:15px;margin-left:clamp(0px,4vw,48px);margin-top:auto;margin-bottom:clamp(20px,6vh,64px);padding-top:32px}
+.kicker{font-size:13px;color:#a8c0c5;margin:0}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(2.6rem,6vw,4.2rem);line-height:1.02;letter-spacing:0;margin:0;text-wrap:balance}
+.lede{font-size:clamp(1rem,1.4vw,1.08rem);line-height:1.5;color:#c0d0d2;max-width:42ch;margin:0}
+.actions,.more-actions{display:flex;flex-wrap:wrap;gap:8px}
+button{font:500 14px/1.2 var(--f-body);color:var(--ink);background:rgba(0,2,6,.24);border:1px solid rgba(180,220,225,.28);border-radius:8px;padding:11px 16px;cursor:pointer;transition:border-color .2s,background-color .2s,opacity .3s}
+button:hover{border-color:rgba(0,240,255,.5);background:rgba(0,240,255,.05)}
 button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 button:disabled{opacity:.45;cursor:progress}
-button.primary{background:rgba(0,240,255,.12);border-color:rgba(0,240,255,.55);box-shadow:0 0 28px rgba(0,240,255,.14)}
-.avatar-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.avatar-pick button{padding:9px 15px;font-size:13px}
-.avatar-pick button[aria-pressed="true"]{border-color:rgba(0,240,255,.6);background:rgba(0,240,255,.1);color:var(--cyan)}
-.ap-label{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:6px}
+button.primary{background:#b4e2df;color:#061216;border-color:#b4e2df}
+button.primary:hover{background:#d0eeea}
+.intro-more{border-top:1px solid rgba(180,220,225,.16);padding-top:4px}
+.intro-more summary{width:max-content;max-width:100%;color:#b4c8cb;font-size:13px;cursor:pointer;list-style:none}
+.intro-more summary::-webkit-details-marker{display:none}
+.intro-more summary:after{content:"+";margin-left:9px;color:var(--muted)}
+.intro-more[open] summary:after{content:"-"}
+.more-actions{padding-top:10px}
+.avatar-pick{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-top:10px}
+.avatar-pick button{padding:8px 12px;font-size:12px}
+.avatar-pick button[aria-pressed="true"]{border-color:rgba(180,226,223,.65);background:rgba(180,226,223,.12);color:#d7f0ec}
+.avatar-pick .studio-open{border-color:rgba(180,220,225,.28);color:var(--ink)}
 #discover{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 24px);left:max(16px,env(safe-area-inset-left,0px));margin:0;text-align:right;opacity:0;transition:opacity 1.6s ease;pointer-events:none}
 #discover.on{opacity:.92}
 #discover b{display:block;font-family:var(--f-display);font-weight:400;font-size:clamp(1.15rem,2.2vw,1.6rem);color:#d6eef2;text-shadow:0 0 20px rgba(0,240,255,.3)}
 #discover i{display:block;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:var(--cyan);margin-top:2px}
 #discover span{display:block;font-size:12px;color:var(--muted);margin-top:4px}
-.legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 26px;margin:0;padding:18px 0 0;border-top:1px solid var(--line);list-style:none}
+.legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 22px;margin:0;padding:14px 0 0;border-top:1px solid rgba(180,220,225,.16);list-style:none}
 .legend li{display:grid;grid-template-columns:10px minmax(0,1fr);gap:3px 12px;align-items:start;min-width:0}
-.dot{width:9px;height:9px;border-radius:50%;margin-top:6px;background:var(--c);box-shadow:0 0 10px 2px var(--c)}
+.dot{width:7px;height:7px;border-radius:50%;margin-top:6px;background:var(--c)}
 .legend .g{font-weight:600;font-size:14px}
 .legend .c{font-family:var(--f-display);font-size:15px;color:var(--c);margin-left:6px}
 .legend p{grid-column:2;margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
-.keys{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.03em;margin:0;line-height:2}
-kbd{font-family:inherit;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--ink)}
-@media (max-width:860px){.legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:560px){.legend{grid-template-columns:1fr}}
-.intro-inner{max-width:880px}
+.keys{font-size:11px;color:var(--muted);margin:10px 0 0;line-height:1.6}
+@media (max-width:560px){#intro{background:linear-gradient(0deg,rgba(0,2,6,.94) 0%,rgba(0,2,6,.72) 58%,rgba(0,2,6,.18) 100%)}.intro-inner{max-width:100%;gap:13px;margin-bottom:20px}.legend{grid-template-columns:1fr}}
 
 #status{position:fixed;top:calc(env(safe-area-inset-top,0px) + 18px);left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));font-family:var(--f-mono);font-size:12px;line-height:1.6;color:#a9c4cb;max-width:70ch;opacity:0;transition:opacity .6s;pointer-events:none;margin:0}
 #status.on{opacity:1}
@@ -86,7 +97,6 @@ kbd{font-family:inherit;border:1px solid var(--line);border-radius:4px;padding:1
 #hud .dbg{color:#a9c4cb}
 @media (max-width:420px){#hud .row{grid-template-columns:82px 90px 34px}}
 @media (prefers-reduced-motion:reduce){#intro,#act,#status,#end{transition:none}}
-.avatar-pick .studio-open{border-color:rgba(0,240,255,.45);color:var(--cyan)}
 #studio{position:fixed;top:0;left:0;bottom:0;width:380px;max-width:100%;box-sizing:border-box;overflow-y:auto;padding:28px 22px calc(env(safe-area-inset-bottom,0px) + 24px) max(22px,env(safe-area-inset-left,0px));background:linear-gradient(to right,rgba(0,3,9,.95),rgba(0,3,9,.84));border-right:1px solid var(--line);display:grid;gap:18px;align-content:start;z-index:5}
 #studio h2{font-family:var(--f-display);font-weight:400;font-size:1.9rem;line-height:1.1;margin:6px 0 6px;letter-spacing:.02em;text-shadow:0 0 24px rgba(0,240,255,.3)}
 .st-note{margin:0;font-size:13px;line-height:1.5;color:var(--muted)}
@@ -113,30 +123,43 @@ kbd{font-family:inherit;border:1px solid var(--line);border-radius:4px;padding:1
 </style>
 
 <canvas id="stage" aria-label="Interactive deep-sea stage"></canvas>
-<video id="cam" class="cam" playsinline muted></video>
+<aside id="cameraGuide" hidden aria-label="Camera framing preview" data-fit="searching">
+  <div class="cam-preview-frame"><video id="cam" class="cam" playsinline muted></video></div>
+  <div class="cam-guide-copy" aria-live="polite"><b id="camGuideTitle">Camera framing</b><span id="camGuideText">Move into the camera view.</span></div>
+  <button id="btnUpper" type="button" aria-pressed="false">I can’t step back — use upper-body mode</button>
+</aside>
 
 <div id="intro" class="panel">
   <div class="intro-inner">
-    <p class="kicker">An interactive bioluminescence installation</p>
+    <p class="kicker">An interactive ocean experience</p>
     <h1>Abyssal Symphony</h1>
-    <p class="lede">A thousand metres below the surface, the only light comes from living things. Even in shallow seas at night, many animals glow. Move, and they answer with light and music. Your whole body, from head to toe, stirs the water. There are no wrong moves and no ending: dance for as long as you like.</p>
+    <p class="lede">Move, and the deep sea answers with light and music.</p>
     <div class="actions">
-      <button id="btnCam" class="primary" type="button" disabled>Loading the ocean…</button>
-      <button id="btnVideo" type="button" disabled>Use a dance video</button>
-      <button id="btnMusic" type="button" disabled title="The avatar dances on its own to your song">Use music</button>
-      <button id="btnDemo" type="button" disabled title="A dancer from motion capture recordings">Watch a dance demo</button>
-      <button id="btnPointer" type="button" disabled>Start with mouse / touch</button>
-      <input id="fileVideo" type="file" accept="video/*" hidden>
-      <input id="fileMusic" type="file" accept="audio/*" hidden>
+      <button id="btnCam" class="primary" type="button" disabled>Loading…</button>
+      <button id="btnPointer" type="button" disabled>Use mouse / touch</button>
     </div>
-    <div class="avatar-pick" role="group" aria-label="Choose an avatar">
-      <span class="ap-label">Avatar</span>
-      <button type="button" data-avatar="m" aria-pressed="true">Male</button>
-      <button type="button" data-avatar="f" aria-pressed="false">Female</button>
-      <button type="button" data-avatar="none" aria-pressed="false">No avatar</button>
-      <button type="button" id="btnStudio" class="studio-open">Design avatar…</button>
-    </div>
-    <ul class="legend">
+    <details class="intro-more">
+      <summary>More ways to play</summary>
+      <div class="more-actions">
+        <button id="btnVideo" type="button" disabled>Dance video</button>
+        <button id="btnMusic" type="button" disabled title="The avatar dances on its own to your song">Play music</button>
+        <button id="btnDemo" type="button" disabled title="A dancer from motion capture recordings">Watch demo</button>
+        <input id="fileVideo" type="file" accept="video/*" hidden>
+        <input id="fileMusic" type="file" accept="audio/*" hidden>
+      </div>
+    </details>
+    <details class="intro-more">
+      <summary>Choose an avatar</summary>
+      <div class="avatar-pick" role="group" aria-label="Choose an avatar">
+        <button type="button" data-avatar="m" aria-pressed="true">Male</button>
+        <button type="button" data-avatar="f" aria-pressed="false">Female</button>
+        <button type="button" data-avatar="none" aria-pressed="false">No avatar</button>
+        <button type="button" id="btnStudio" class="studio-open">Customize</button>
+      </div>
+    </details>
+    <details class="intro-more">
+      <summary>About the experience</summary>
+      <ul class="legend">
       <li style="--c:#5fffd0"><span class="dot"></span><span><span class="g">The show</span><span class="c">A deep-sea dance troupe</span></span><p>You are the lead dancer. Sea pens, sea fireflies, lanternfish and crystal jellies take turns with the rhythm, then gather for the finale.</p></li>
       <li style="--c:#ffab8a"><span class="dot"></span><span><span class="g">Stomp &amp; jump</span><span class="c">Sea Pens</span></span><p>Waves of light ripple through the sea-pen garden from where your feet land.</p></li>
       <li style="--c:#4fb6ff"><span class="dot"></span><span><span class="g">Raise your hands high</span><span class="c">Sea Fireflies</span></span><p>Strings of glowing pearls rise higher and brighter. Clap, and they release their pearls all at once.</p></li>
@@ -144,8 +167,10 @@ kbd{font-family:inherit;border:1px solid var(--line);border-radius:4px;padding:1
       <li style="--c:var(--cyan)"><span class="dot"></span><span><span class="g">Swing your arms</span><span class="c">Lanternfish</span></span><p>The school follows the trail of your hands. Zigzag, and the school scatters, then regroups.</p></li>
       <li style="--c:#c9a7ff"><span class="dot"></span><span><span class="g">Use music</span><span class="c">The avatar dances on its own</span></span><p>Upload a song: the avatar improvises with moves learned from professional dancers (9 styles), following the tempo, energy and mood of the music, while every creature answers on the beat.</p></li>
       <li style="--c:var(--cyan)"><span class="dot"></span><span><span class="g">Whole body</span><span class="c">Currents of Light</span></span><p>Lean, spin, stomp, jump: the water follows your body.</p></li>
-    </ul>    <p class="keys"><kbd>F</kbd> fullscreen · <kbd>A</kbd> switch avatar · <kbd>H</kbd> parameter panel · <kbd>D</kbd> calibration mode · <kbd>I</kbd> science captions · <kbd>M</kbd> sound · <kbd>Esc</kbd> stop · <kbd>R</kbd> restart</p>
-    <p class="keys">Music-mode movement is learned from the AIST++ Dance Motion Dataset (Google, CC BY 4.0; Li et al. 2021) and recomposed live to your song. Uploaded songs are only played and analysed on this device.</p>
+      </ul>
+      <p class="keys">Press F for fullscreen, M to mute, or Esc to stop. Music and camera stay on this device.</p>
+      <p class="keys">Music-mode movement comes from the AIST++ Dance Motion Dataset (Google, CC BY 4.0; Li et al. 2021), recomposed live to your song.</p>
+    </details>
   </div>
 </div>
 
@@ -825,9 +850,17 @@ const FR = { ok: false, cx: 0, cy: 0, torso: 1 };
 const frame_ = { s: 1, ox: 0, oy: 0, mirror: true };
 const SWAP = { 7: 8, 8: 7, 11: 12, 12: 11, 13: 14, 14: 13, 15: 16, 16: 15, 17: 18, 18: 17, 19: 20, 20: 19, 23: 24, 24: 23, 25: 26, 26: 25, 27: 28, 28: 27, 29: 30, 30: 29, 31: 32, 32: 31 };
 if (TEST) window.__mapCam = { mapCamera: (l, dt) => mapCamera(l, dt), get body() { return body; }, get frame() { return frame_; }, get W() { return W; }, get H() { return H; }, setKind(k) { inputKind = k; }, setMode(m) { mode = m; }, step(n) { const raf = window.requestAnimationFrame; window.requestAnimationFrame = () => 0; let t = performance.now(); try { for (let i = 0; i < n; i++) { t += 33; frame(t); } } finally { window.requestAnimationFrame = raf; } } };
+function landmarkInFrame(l, i) {
+  const p = l[i];
+  return (p.visibility ?? 1) > 0.45 && p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1;
+}
+function fullBodyInFrame(l) {
+  return [0, 23, 24, 25, 26, 27, 28].every(i => landmarkInFrame(l, i));
+}
 function mapCamera(l, dt) {
   const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
   const vis = i => (l[i].visibility ?? 1);
+  guide.fullBody = inputKind !== 'live' || fullBodyInFrame(l);
   if (inputKind === 'video' && LEARN.ok && LEARN.frm && !demo.on) {
     // video yang sudah dipelajari: bingkai TETAP dari seluruh video (tinggi berdiri & lantai), hanya geser kiri-kanan pelan
     // → membungkuk, jongkok, atau gerak lantai tetap terlihat apa adanya, tanpa zoom masuk/keluar
@@ -861,7 +894,7 @@ function mapCamera(l, dt) {
     const swPx = Math.hypot(sL.x - sR.x, sL.y - sR.y), tPx = Math.hypot((sL.x + sR.x - hL.x - hR.x) / 2, (sL.y + sR.y - hL.y - hR.y) / 2);
     const torso = Math.max(hipsVis ? tPx : 0, swPx * 1.25, 8);
     // kaki dianggap terlihat hanya bila lutut & pergelangan kaki KEDUANYA jelas (tebakan samar = goyang/bengkok)
-    const legsVis = hipsVis && Math.min(vis(25), vis(26), vis(27), vis(28)) > 0.65;
+    const legsVis = hipsVis && !guide.upperOnly && Math.min(vis(25), vis(26), vis(27), vis(28)) > 0.65;
     if (!FR.ok || FR.kind !== 'cam') { FR.kind = 'cam'; FR.torso = torso; FR.ok = true; FR.oy = undefined; FR.floor = undefined; }
     // badan menyamping (bahu menyempit) tidak boleh membuat avatar membesar: mengecil cepat, membesar pelan
     FR.torso = approach(FR.torso, torso, torso > FR.torso ? 0.25 : 1.2, dt);   // approach() memakai konstanta waktu (detik): kecil = cepat
@@ -921,12 +954,53 @@ function mapCamera(l, dt) {
   const p = body.pts;
   const sw = Math.max(0.3, Math.hypot(p.ls.x - p.rs.x, p.ls.y - p.rs.y));
   body.sw = body.sw + (sw - body.sw) * (1 - Math.exp(-dt * 4));
-  // panduan bingkai: kaki ikut menggerakkan air, jadi minta pengunjung mundur bila kaki tak terlihat
-  const legsOk = Math.min(vis(25), vis(26), vis(27), vis(28)) > 0.45 && Math.max(l[27].y, l[28].y) < 1.02;
+  const legsOk = inputKind === 'live' ? guide.fullBody && !guide.upperOnly :
+    Math.min(vis(25), vis(26), vis(27), vis(28)) > 0.45 && Math.max(l[27].y, l[28].y) < 1.02;
   const headOk = vis(0) > 0.5 && l[0].y > -0.02;
-  guide.noLegs = legsOk ? 0 : guide.noLegs + dt; guide.noHead = headOk ? 0 : guide.noHead + dt;
+  guide.noLegs = legsOk ? 0 : inputKind === 'live' ? Math.max(0.31, guide.noLegs + dt) : guide.noLegs + dt;
+  guide.noHead = headOk ? 0 : guide.noHead + dt;
 }
-const guide = { noLegs: 0, noHead: 0, lastSaid: -99 };
+const guide = { noLegs: 0, noHead: 0, lastSaid: -99, fullBody: false, upperOnly: false };
+function syncCameraGuide(l) {
+  const panel = $('#cameraGuide');
+  // kamera langsung: pratinjau hanya saat persiapan atau bila tubuh hilang dari bingkai; saat menari disembunyikan
+  const dancing = inputKind === 'live' && show.state === 'running' && body.present && (guide.fullBody || guide.upperOnly);
+  const visible = mode === 'camera' && !dancing;
+  if (panel.hidden === visible) panel.hidden = !visible;
+  if (!visible) return;
+  const upperButton = $('#btnUpper');
+  const setText = (id, text) => { const el = $(id); if (el.textContent !== text) el.textContent = text; };
+  const setFit = fit => { if (panel.dataset.fit !== fit) panel.dataset.fit = fit; };
+  const setButtonText = text => { if (upperButton.textContent !== text) upperButton.textContent = text; };
+  upperButton.hidden = inputKind !== 'live';
+  if (upperButton.getAttribute('aria-pressed') !== String(guide.upperOnly)) upperButton.setAttribute('aria-pressed', String(guide.upperOnly));
+  if (inputKind !== 'live') {
+    setFit('searching');
+    setText('#camGuideTitle', 'Video preview');
+    setText('#camGuideText', 'Following the dancer.');
+  } else if (guide.upperOnly) {
+    setFit('upper');
+    setText('#camGuideTitle', 'Upper body');
+    setText('#camGuideText', 'Legs stay still.');
+    setButtonText('Full body');
+  } else if (!l || (l[11].visibility ?? 1) <= 0.5 || (l[12].visibility ?? 1) <= 0.5) {
+    setFit('searching');
+    setText('#camGuideTitle', 'Find your spot');
+    setText('#camGuideText', 'Step into view.');
+    setButtonText('Use upper body');
+  } else if (guide.fullBody) {
+    setFit('ready');
+    setText('#camGuideTitle', 'Ready');
+    setText('#camGuideText', 'Full body in frame.');
+    setButtonText('Use upper body');
+  } else {
+    setFit('upper');
+    setText('#camGuideTitle', 'Step back');
+    setText('#camGuideText', 'Fit head to toe in the frame.');
+    setButtonText('Use upper body');
+  }
+}
+$('#btnUpper').addEventListener('click', () => { guide.upperOnly = !guide.upperOnly; syncCameraGuide(latestLms); });
 // One Euro filter (Casiez dkk., 2012) per sendi, dalam piksel layar.
 // beta diskalakan dengan lebar tubuh di layar, jadi perilakunya sama untuk penari dekat atau jauh.
 const OE = {};
@@ -945,6 +1019,7 @@ function updateGuide() {
   if (mode !== 'camera' || !body.present || show.state !== 'running') return;
   const now = performance.now() / 1000; if (now - guide.lastSaid < 30) return;
   const vidMsg = inputKind === 'video';
+  if (!vidMsg) return;
   if (guide.noLegs > 5) { guide.lastSaid = now; status(vidMsg ? 'The dancer\'s feet are not visible in this video; the avatar\'s legs follow the hips.' : 'Step back a little until your knees and feet are visible. Your feet move the water too.', 6500); }
   else if (guide.noHead > 5) { guide.lastSaid = now; status(vidMsg ? 'The dancer\'s head is cut off in this video.' : 'Mundur sedikit sampai kepalamu terlihat.', 6500); }
 }
@@ -1308,6 +1383,7 @@ function updateBody(dt) {  if (mode === 'camera') {
   body.cx = (p.ls.x + p.rs.x + p.lh.x + p.rh.x) / 4;
   body.cy = (p.ls.y + p.rs.y + p.lh.y + p.rh.y) / 4;
   body.waist = (p.lh.y + p.rh.y) / 2 + body.sw * 0.25;
+  syncCameraGuide(latestLms);
   updateGuide();
 }
 
@@ -1527,7 +1603,8 @@ function resetShow() {
 }
 function startRun() { resetShow(); show.state = 'running'; if (AudioEng.ready) AudioEng.resetStory(); }
 function updateShow(dt) {
-  if (show.state === 'waiting' && body.present && body.presentFor > 1) { startRun(); status(''); }
+  const cameraFramingOk = inputKind !== 'live' || guide.fullBody || guide.upperOnly;
+  if (show.state === 'waiting' && body.present && body.presentFor > 1 && cameraFramingOk) { startRun(); status(''); }
   if (show.state === 'running') {
     show.t += dt; const t = show.t;
     // tanpa babak: lautan bangun saat pengunjung mulai bergerak, lalu terus mengalir selama mereka menari
@@ -5853,7 +5930,7 @@ async function startVideoFile(src) {
 function stopToIntro() {
   musicStop(); LEARN.busy = false; LEARN.ok = false; demo.on = false;
   try { video.pause(); if (video.srcObject) { video.srcObject.getTracks().forEach(tr => tr.stop()); video.srcObject = null; } } catch (e) {}
-  mode = 'none'; show.state = 'idle'; resetShow(); video.classList.remove('ref'); showIntro(); status('', 0);
+  mode = 'none'; show.state = 'idle'; resetShow(); video.classList.remove('ref'); $('#cameraGuide').hidden = true; showIntro(); status('', 0);
 }
 // semua shader dikompilasi di depan (termasuk makhluk yang belum tampil) → tidak ada jeda 30–50 ms saat makhluk baru muncul
 function precompileAll() { try { const hid = []; scene.traverse(o => { if (!o.visible) { hid.push(o); o.visible = true; } }); renderer.compile(scene, cam); for (const o of hid) o.visible = false; } catch (e) {} }
@@ -5880,14 +5957,15 @@ async function begin(m, src) {
     show.state = 'loading';
     try {
       if (m === 'video') { inputKind = 'video'; FR.ok = false; FR.oy = undefined; prepReset(); videoHint.said = false; await startVideoFile(src); video.classList.add('ref'); }
-      else { inputKind = 'live'; video.classList.remove('ref'); await startCamera(); }
+      else { inputKind = 'live'; FR.ok = false; Object.assign(guide, { noLegs: 0, noHead: 0, fullBody: false, upperOnly: false }); video.classList.remove('ref'); await startCamera(); }
       mode = 'camera'; show.state = 'waiting';
-      status(m === 'video' ? 'Looking for the dancer in the video…' : 'Step in front of the camera until your whole body, from head to toe, is visible.', 0); return;
+      syncCameraGuide(latestLms);
+      if (m === 'video') status('Looking for the dancer in the video…', 0); else status('', 0); return;
     } catch (e) {
       // gagal: kembali ke layar awal dengan alasan yang jelas (tidak diam-diam pindah ke mode mouse)
-      mode = 'none'; show.state = 'idle'; video.classList.remove('ref'); showIntro();
+      mode = 'none'; show.state = 'idle'; video.classList.remove('ref'); $('#cameraGuide').hidden = true; showIntro();
       const camMsg = (e && (e.name === 'NotReadableError' || e.name === 'TrackStartError' || /in use|could not start/i.test(e.message || '')))
-        ? 'The camera is being used by another app (for example TouchDesigner, Zoom, Teams or OBS). Close that app or stop its camera, then press Start with the camera again.'
+        ? 'The camera is being used by another app (for example TouchDesigner, Zoom, Teams or OBS). Close that app or stop its camera, then press Start with camera again.'
         : (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError'))
           ? 'Camera access was blocked. Allow the camera in the browser\'s address bar, then try again. The camera works from localhost or an HTTPS address, not from a double-clicked file.'
           : `The camera cannot be used yet: ${(e && e.message) || 'the camera could not be opened'}. Check that a webcam is connected.`;
@@ -5965,11 +6043,11 @@ document.addEventListener('visibilitychange', () => {
 // tombol suara (pojok kanan atas): mematikan semua suara, termasuk lagu
 (() => {
   const st = document.createElement('style');
-  st.textContent = '#btnSound{position:fixed;top:max(14px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));z-index:9;font:500 12px/1 var(--f-mono,ui-monospace,monospace);letter-spacing:.08em;color:#cfeff3;background:rgba(3,8,14,.55);border:1px solid rgba(140,215,235,.3);border-radius:999px;padding:8px 12px;cursor:pointer;backdrop-filter:blur(6px)}#btnSound[aria-pressed="true"]{color:#ffcf7a;border-color:rgba(255,207,122,.5)}#btnSound:focus-visible{outline:2px solid #5fe3ff;outline-offset:2px}';
+  st.textContent = '#btnSound{position:fixed;top:max(14px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));z-index:9;font:500 12px/1.2 var(--f-body,system-ui,sans-serif);color:#cfeff3;background:rgba(3,8,14,.55);border:1px solid rgba(140,215,235,.3);border-radius:6px;padding:8px 10px;cursor:pointer}#btnSound[aria-pressed="true"]{color:#ffcf7a;border-color:rgba(255,207,122,.5)}#btnSound:focus-visible{outline:2px solid #5fe3ff;outline-offset:2px}';
   document.head.appendChild(st);
-  const b = document.createElement('button'); b.id = 'btnSound'; b.type = 'button'; b.textContent = 'Sound: on'; b.setAttribute('aria-pressed', 'false'); b.title = 'Turn all sound off / on (M)';
+  const b = document.createElement('button'); b.id = 'btnSound'; b.type = 'button'; b.textContent = 'Sound on'; b.setAttribute('aria-pressed', 'false'); b.title = 'Turn all sound off / on (M)';
   const toggle = () => {
-    SOUND.muted = !SOUND.muted; b.textContent = SOUND.muted ? 'Sound: off' : 'Sound: on'; b.setAttribute('aria-pressed', String(SOUND.muted));
+    SOUND.muted = !SOUND.muted; b.textContent = SOUND.muted ? 'Sound off' : 'Sound on'; b.setAttribute('aria-pressed', String(SOUND.muted));
     const ac = AudioEng.ac; if (ac && ac.state !== 'closed') { if (SOUND.muted) ac.suspend().catch(() => {}); else ac.resume().catch(() => {}); }
     if (MUS.el) MUS.el.muted = SOUND.muted;
   };
@@ -6007,7 +6085,7 @@ addEventListener('resize', resize);
 resize(); medusa.reset();
 window.__abyssReady = true;
 const bc = $('#btnCam'), bp = $('#btnPointer');
-bc.disabled = false; bp.disabled = false; $('#btnVideo').disabled = false; $('#btnMusic').disabled = false; bc.textContent = 'Start with the camera';
+bc.disabled = false; bp.disabled = false; $('#btnVideo').disabled = false; $('#btnMusic').disabled = false; bc.textContent = 'Start with camera';
 requestAnimationFrame(t => { last = t; requestAnimationFrame(frame); });
 </script>
 
