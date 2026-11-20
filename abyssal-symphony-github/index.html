@@ -824,6 +824,7 @@ let inputKind = 'live';
 const FR = { ok: false, cx: 0, cy: 0, torso: 1 };
 const frame_ = { s: 1, ox: 0, oy: 0, mirror: true };
 const SWAP = { 7: 8, 8: 7, 11: 12, 12: 11, 13: 14, 14: 13, 15: 16, 16: 15, 17: 18, 18: 17, 19: 20, 20: 19, 23: 24, 24: 23, 25: 26, 26: 25, 27: 28, 28: 27, 29: 30, 30: 29, 31: 32, 32: 31 };
+if (TEST) window.__mapCam = { mapCamera: (l, dt) => mapCamera(l, dt), get body() { return body; }, get frame() { return frame_; }, get W() { return W; }, get H() { return H; }, setKind(k) { inputKind = k; }, setMode(m) { mode = m; }, step(n) { const raf = window.requestAnimationFrame; window.requestAnimationFrame = () => 0; let t = performance.now(); try { for (let i = 0; i < n; i++) { t += 33; frame(t); } } finally { window.requestAnimationFrame = raf; } } };
 function mapCamera(l, dt) {
   const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
   const vis = i => (l[i].visibility ?? 1);
@@ -834,6 +835,7 @@ function mapCamera(l, dt) {
     FR.cx = FR.ok ? approach(FR.cx, cxv, 1.2, dt) : cxv; FR.ok = true;
     Object.assign(frame_, { s, ox: W / 2 - FR.cx * s, oy: H * 0.95 - F.floor * vh * s, mirror: false });
   } else if (inputKind === 'video') {
+    FR.kind = 'vid';
     const px = i => ({ x: l[i].x * vw, y: l[i].y * vh });
     const sL = px(11), sR = px(12), hL = px(23), hR = px(24);
     const cx = (sL.x + sR.x + hL.x + hR.x) / 4, cy = (sL.y + sR.y + hL.y + hR.y) / 4;
@@ -851,8 +853,40 @@ function mapCamera(l, dt) {
     FR.oy = FR.oy === undefined || !isFinite(FR.oy) ? oy : approach(FR.oy, oy, 0.35, dt);   // tanpa lompatan saat kaki muncul/hilang
     Object.assign(frame_, { s, ox: W / 2 - FR.cx * s, oy: FR.oy, mirror: false });
   } else {
-    const s = Math.max(W / vw, H / vh);
-    Object.assign(frame_, { s, ox: (W - vw * s) / 2, oy: (H - vh * s) / 2, mirror: true });
+    // kamera langsung (laptop): ukuran avatar TETAP seolah seluruh tubuh terlihat. Skala dari ukuran badan
+    // (bukan dari gambar kamera), kaki berpijak di lantai layar; bagian yang tak terlihat diam berdiri tegak.
+    const px = i => ({ x: (1 - l[i].x) * vw, y: l[i].y * vh });
+    const sL = px(11), sR = px(12), hL = px(23), hR = px(24);
+    const hipsVis = Math.min(vis(23), vis(24)) > 0.5;
+    const swPx = Math.hypot(sL.x - sR.x, sL.y - sR.y), tPx = Math.hypot((sL.x + sR.x - hL.x - hR.x) / 2, (sL.y + sR.y - hL.y - hR.y) / 2);
+    const torso = Math.max(hipsVis ? tPx : 0, swPx * 1.25, 8);
+    // kaki dianggap terlihat hanya bila lutut & pergelangan kaki KEDUANYA jelas (tebakan samar = goyang/bengkok)
+    const legsVis = hipsVis && Math.min(vis(25), vis(26), vis(27), vis(28)) > 0.65;
+    if (!FR.ok || FR.kind !== 'cam') { FR.kind = 'cam'; FR.torso = torso; FR.ok = true; FR.oy = undefined; FR.floor = undefined; }
+    // badan menyamping (bahu menyempit) tidak boleh membuat avatar membesar: mengecil cepat, membesar pelan
+    FR.torso = approach(FR.torso, torso, torso > FR.torso ? 0.25 : 1.2, dt);   // approach() memakai konstanta waktu (detik): kecil = cepat
+    l = l.slice();
+    const mx = (l[11].x + l[12].x) / 2, dx = (l[11].x - l[12].x) / 2, shYn = (l[11].y + l[12].y) / 2;
+    if (!hipsVis) {   // pinggul di luar kamera: tepat di bawah bahu, sejauh panjang badan (bukan tebakan MediaPipe)
+      const hy = shYn + FR.torso / vh;
+      l[23] = { x: mx + dx * 0.7, y: hy, z: 0, visibility: 0.9 }; l[24] = { x: mx - dx * 0.7, y: hy, z: 0, visibility: 0.9 };
+    }
+    if (!legsVis) {   // kaki tak terlihat: berdiri lurus dengan proporsi tubuh (paha+betis ≈ 1,75 × panjang badan), tidak ikut tebakan
+      const Ly = FR.torso * 1.75 / vh, fw = Math.abs(dx) * 0.12;
+      for (const [hi, ki, ai, he, to, sgn] of [[23, 25, 27, 29, 31, 1], [24, 26, 28, 30, 32, -1]]) {
+        const hx = l[hi].x, hy = l[hi].y, fx = hx + sgn * fw;
+        l[ki] = { x: (hx + fx) / 2, y: hy + Ly * 0.5, z: 0, visibility: 0.9 };
+        l[ai] = { x: fx, y: hy + Ly, z: 0, visibility: 0.9 };
+        l[he] = { x: fx, y: hy + Ly * 1.03, z: 0, visibility: 0.9 };
+        l[to] = { x: fx + sgn * fw * 0.5, y: hy + Ly * 1.06, z: 0, visibility: 0.9 };
+      }
+    }
+    // lantai = pergelangan kaki terendah (asli atau buatan). Kaki buatan → lantai terkunci cepat (telapak selalu menapak)
+    const floorNow = Math.max(l[27].y, l[28].y) * vh;
+    if (FR.floor === undefined) FR.floor = floorNow;
+    FR.floor = legsVis ? approach(FR.floor, floorNow, floorNow > FR.floor ? 0.2 : 1.2, dt) : approach(FR.floor, floorNow, 0.06, dt);
+    const s = (Math.min(H, W * 1.1) * 0.215) / FR.torso;
+    Object.assign(frame_, { s, ox: W / 2 - vw / 2 * s, oy: H * 0.92 - FR.floor * s, mirror: true });
   }
   const { s, ox, oy, mirror } = frame_;
   const k = 1 - Math.exp(-dt * 22);
@@ -866,8 +900,10 @@ function mapCamera(l, dt) {
   const kz = 1 - Math.exp(-dt * 6), swPx = Math.hypot(hipL.x - hipR.x, hipL.y - hipR.y) * 1.4 + 1;
   for (const [n, i] of Object.entries(IDX)) {
     let q = m(i);
-    if ((n === 'la' || n === 'ra') && (q.v < 0.45 || q.y > H * 1.02)) { const h = n === 'la' ? hipL : hipR; q = { x: h.x, y: Math.min(H * 0.97, h.y + legLen), z: 0, v: 0.3 }; }
-    if ((n === 'lk' || n === 'rk') && (q.v < 0.45 || q.y > H * 1.02)) { const h = n === 'lk' ? hipL : hipR; q = { x: h.x, y: Math.min(H * 0.97, h.y + legLen * 0.5), z: 0, v: 0.3 }; }
+    // kamera langsung: kaki yang tak terlihat berdiri tegak sampai lantai layar (H*0.95), ukuran tetap
+    const footY = h => FR.kind === 'cam' && inputKind !== 'video' ? Math.max(h.y + legLen * 0.6, H * 0.95) : Math.min(H * 0.97, h.y + legLen);
+    if ((n === 'la' || n === 'ra') && (q.v < 0.45 || q.y > H * 1.02)) { const h = n === 'la' ? hipL : hipR; q = { x: h.x, y: footY(h), z: 0, v: 0.3 }; }
+    if ((n === 'lk' || n === 'rk') && (q.v < 0.45 || q.y > H * 1.02)) { const h = n === 'lk' ? hipL : hipR; q = { x: h.x, y: (h.y + footY(h)) / 2, z: 0, v: 0.3 }; }
     // filter One Euro: diam = stabil (tanpa getar), gerak cepat = langsung terkejar.
     // Sendi yang kurang yakin terlihat diperhalus lebih kuat.
     const f = oneEuro(n, q.x, q.y, dt, (q.v > 0.6 ? 1.1 : 0.5) * OEK.c, 0.9 / swPx);
@@ -1260,6 +1296,7 @@ function videoHint(dt) {
 }
 function updateBody(dt) {  if (mode === 'camera') {
     pollPose();
+    if (TEST && window.__fakeLms) latestLms = window.__fakeLms();
     const l = latestLms, ok = l && (l[11].visibility ?? 1) > 0.5 && (l[12].visibility ?? 1) > 0.5;
     if (ok) { mapCamera(l, dt); body.present = true; body.presentFor += dt; lostFor = 0; }
     else { lostFor += dt; if (lostFor > 0.6) { body.present = false; body.presentFor = 0; resetOE(); } }
@@ -2138,8 +2175,7 @@ const SPECIES = {
   clap:   { name: 'Sea fireflies', sci: 'Ostracoda', how: 'a hand clap' },
   still:  { name: 'Anglerfish', sci: 'Melanocetus johnsonii', how: 'holding still' },
   strike: { name: 'Meteor shrimp', sci: 'Acanthephyra', how: 'a sharp strike' },
-  fluid:  { name: 'Siphonophore', sci: 'Siphonophorae', how: 'soft circling moves' },
-  whale:  { name: 'Pulse whale', sci: 'an imaginary guardian (real whales do not glow)', how: 'outstretched arms' }
+  fluid:  { name: 'Siphonophore', sci: 'Siphonophorae', how: 'soft circling moves' }
 };
 function discover(kind) {
   if (show.said['d_' + kind]) return; show.said['d_' + kind] = true;
@@ -4647,8 +4683,20 @@ function poseHuman(dt, J) {
   if (!HUM.sInit) { HUM.s = sT; HUM.sMax = sT; HUM.sInit = true; }
   else if (inputKind === 'video') { HUM.sMax = Math.max((HUM.sMax || sT) * Math.exp(-dt * 0.02), sT); HUM.s = approach(HUM.s, HUM.sMax, 0.6, dt); }   // video/demo/musik: ukuran berdiri, tidak mengecil saat membungkuk
   else HUM.s = approach(HUM.s, sT, 0.6, dt);
+  const camFix = mode === 'camera' && inputKind === 'live';
+  if (camFix) {
+    // kamera langsung: UKURAN AVATAR TETAP (kepala ±20% dari atas layar, telapak kaki di dasar layar),
+    // sama persis entah kamera melihat seluruh badan atau hanya pusar ke atas. Hanya arah tulang yang mengikuti kamera.
+    if (HUM.camW !== W || HUM.camH !== H) {
+      screenToWorld(W / 2, H * 0.2, _w); const yTop = _w.y; screenToWorld(W / 2, H * 0.975, _w);
+      HUM.camFloor = _w.y; HUM.camW = W; HUM.camH = H;
+      HUM.camS = (yTop - _w.y) / Math.max(0.1, HUM.mUp0.y + HUM.restTorso * 1.45);
+    }
+    HUM.s = HUM.camS;
+  }
   root.scale.setScalar(HUM.s);
-  root.position.set(J.hipC.x - HUM.s * HUM.mUp0.x, J.hipC.y - HUM.s * HUM.mUp0.y, (J.hipC.z || 0) - HUM.s * HUM.mUp0.z);
+  if (camFix) { HUM.camX = HUM.camX === undefined ? J.hipC.x : approach(HUM.camX, J.hipC.x, 0.15, dt); root.position.set(HUM.camX - HUM.s * HUM.mUp0.x, HUM.camFloor, 0); }
+  else root.position.set(J.hipC.x - HUM.s * HUM.mUp0.x, J.hipC.y - HUM.s * HUM.mUp0.y, (J.hipC.z || 0) - HUM.s * HUM.mUp0.z);
   root.updateMatrixWorld(true);
   // demo: putaran tiap tulang disalin langsung dari rekaman motion capture (bukan ditebak ulang dari 33 titik),
   // jadi gerak avatar persis tarian aslinya — termasuk jari — tanpa pergelangan yang membalik
@@ -4999,6 +5047,7 @@ function buildWhale() {
   }
 }
 function summonWhale(forced) {
+  return;   // paus dinonaktifkan (permintaan tim): tidak dipanggil lagi di mode mana pun
   const zz = forced ? -4.5 : -17;
   const halfW = (CAM_BASE.z - zz) * Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * (W / H);
   if (forced) {
@@ -5837,7 +5886,12 @@ async function begin(m, src) {
     } catch (e) {
       // gagal: kembali ke layar awal dengan alasan yang jelas (tidak diam-diam pindah ke mode mouse)
       mode = 'none'; show.state = 'idle'; video.classList.remove('ref'); showIntro();
-      status(m === 'video' ? `The dance video cannot be used yet: ${e.message || 'the video could not be opened'}.` : `The camera cannot be used yet: ${e.message || 'the camera could not be opened'}. For the camera, open the app from localhost or your own HTTPS address.`, 15000);
+      const camMsg = (e && (e.name === 'NotReadableError' || e.name === 'TrackStartError' || /in use|could not start/i.test(e.message || '')))
+        ? 'The camera is being used by another app (for example TouchDesigner, Zoom, Teams or OBS). Close that app or stop its camera, then press Start with the camera again.'
+        : (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError'))
+          ? 'Camera access was blocked. Allow the camera in the browser\'s address bar, then try again. The camera works from localhost or an HTTPS address, not from a double-clicked file.'
+          : `The camera cannot be used yet: ${(e && e.message) || 'the camera could not be opened'}. Check that a webcam is connected.`;
+      status(m === 'video' ? `The dance video cannot be used yet: ${e.message || 'the video could not be opened'}.` : camMsg, 15000);
       return;
     }
   }
